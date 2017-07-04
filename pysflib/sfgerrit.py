@@ -35,7 +35,11 @@ class SFGerritRestAPI(GerritRestAPI):
             # Re-add the auth prefix to URL because
             # the base init remove if as we does not pass
             # the auth arg
-            self.url += 'r/a/'
+            if '/r/' not in self.url:
+                # 2.5.0 url format
+                self.url += 'r/a/'
+            else:
+                self.url += 'a/'
             self.kwargs.update(
                 {"cookies": dict(
                     auth_pubtkt=auth_cookie)})
