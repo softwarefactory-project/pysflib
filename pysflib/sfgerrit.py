@@ -619,13 +619,19 @@ class GerritUtils:
             if vote.get("username") == username:
                 return vote.get("value")
 
-    def wait_for_verify(self, change_number, timeout=60):
+    def wait_for_verify(self, change_number, users=None, timeout=60):
+        # make sure users is a list
+        if not users:
+            users = ['jenkins']
+        if isinstance(users, str):
+            users = [users]
         for retry in xrange(timeout):
-            vote = self.get_vote(change_number, "Verified", "jenkins")
-            if vote is not None and vote != 0:
-                return vote
+            votes = [self.get_vote(change_number,
+                                   "Verified", user) for user in users]
+            if any(votes):
+                return [vote for vote in votes if vote][0]
             time.sleep(1)
-        msg = "Jenkins didn't vote on %d" % change_number
+        msg = "%s didn't vote on %d" % (users, change_number)
         logger.error(msg)
         raise RuntimeError(msg)
 
